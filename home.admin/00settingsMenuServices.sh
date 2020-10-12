@@ -19,6 +19,7 @@ if [ ${#mempoolExplorer} -eq 0 ]; then mempoolExplorer="off"; fi
 if [ ${#faraday} -eq 0 ]; then faraday="off"; fi
 if [ ${#bos} -eq 0 ]; then bos="off"; fi
 if [ ${#thunderhub} -eq 0 ]; then thunderhub="off"; fi
+if [ ${#xud} -eq 0 ]; then xud="off"; fi
 
 # show select dialog
 echo "run dialog ..."
@@ -37,6 +38,7 @@ OPTIONS+=(l 'Lightning Loop' ${loop})
 OPTIONS+=(o 'Balance of Satoshis' ${bos})
 OPTIONS+=(f 'Faraday' ${faraday})
 OPTIONS+=(m 'lndmanage' ${lndmanage})
+OPTIONS+=(x 'XUD (OpenDEX)' ${xud})
 
 CHOICES=$(dialog --title ' Additional Services ' --checklist ' use spacebar to activate/de-activate ' 20 45 12  "${OPTIONS[@]}" 2>&1 >/dev/tty)
 
@@ -400,4 +402,43 @@ if [ ${needsReboot} -eq 1 ]; then
    sudo -u bitcoin ${network}-cli stop
    sleep 4
    sudo /home/admin/XXshutdown.sh reboot
+fi
+
+# XUD (OpenDEX) process choice
+choice="off"; check=$(echo "${CHOICES}" | grep -c "i")
+if [ ${check} -eq 1 ]; then choice="on"; fi
+if [ "${xud}" != "${choice}" ]; then
+  echo "XUD (OpenDEX) Setting changed .."
+  anychange=1
+  if [ "${choice}" =  "on" ]; then
+    if ! command -v docker >/dev/null; then
+      # Install Docker-CE
+      curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+      # arm64
+      # TODO support other platforms: amd64 & armhf (32bit)
+      sudo add-apt-repository \
+"deb [arch=arm64] https://download.docker.com/linux/debian \
+$(lsb_release -cs) \
+stable"
+      sudo apt-get update
+      sudo apt-get install docker-ce docker-ce-cli containerd.io
+      sudo usermod -aG $USER docker
+      # https://stackoverflow.com/questions/49434650/how-to-add-a-user-to-a-group-without-logout-login-bash-script
+      newgrp docker
+    fi
+    xudScript="/home/admin/xud.sh" # TODO change to a more proper location in Raspiblitz
+    if [ ! -e "$xudScript" ]; then
+      # Download xud.sh
+      curl -s https://raw.githubusercontent.com/ExchangeUnion/xud-docker/master/xud.sh "$xudScript"
+    fi
+  
+    # TODO make sure lndtc is properly set up
+    bash "$xudScript" --lndbtc.mode=external \
+--lndbtc.rpc-host=127.0.0.1 \
+--lndbtc.rpc-port=10009 \
+--lndbtc.certpath=... \
+--lndbtc.macaroonpath=... \
+  fi
+else
+  echo "XUD (OpenDEX) setting unchanged."
 fi
