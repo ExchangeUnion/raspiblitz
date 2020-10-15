@@ -414,6 +414,8 @@ if [ "${xud}" != "${choice}" ]; then
     if ! command -v docker >/dev/null; then
       # Install Docker-CE
       curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+      # Install add-apt-repository
+      sudo apt-get install software-properties-common
       # arm64
       # TODO support other platforms: amd64 & armhf (32bit)
       sudo add-apt-repository \
@@ -422,9 +424,10 @@ $(lsb_release -cs) \
 stable"
       sudo apt-get update
       sudo apt-get install docker-ce docker-ce-cli containerd.io
-      sudo usermod -aG $USER docker
+      sudo usermod -aG docker $USER
       # https://stackoverflow.com/questions/49434650/how-to-add-a-user-to-a-group-without-logout-login-bash-script
-      newgrp docker
+      # skip 00raspiblitz.sh
+      TMUX=1 newgrp docker
     fi
     xudScript="/home/admin/xud.sh" # TODO change to a more proper location in Raspiblitz
     if [ ! -e "$xudScript" ]; then
@@ -436,8 +439,8 @@ stable"
     bash "$xudScript" --lndbtc.mode=external \
 --lndbtc.rpc-host=127.0.0.1 \
 --lndbtc.rpc-port=10009 \
---lndbtc.certpath=... \
---lndbtc.macaroonpath=... \
+--lndbtc.certpath=$HOME/.lnd/tls.cert \
+--lndbtc.macaroonpath=$HOME/.lnd/data/chain/bitcoin/mainnet/admin.macaroon \
   fi
 else
   echo "XUD (OpenDEX) setting unchanged."
