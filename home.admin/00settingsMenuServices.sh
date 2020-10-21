@@ -442,6 +442,7 @@ stable"
   
     # TODO make sure lndtc is properly set up
     bash "$xudScript" -b pi
+--network mainnet \
 --mainnet-dir /mnt/hdd/xud-mainnet \
 --lndbtc.mode=external \
 --lndbtc.rpc-host=127.0.0.1 \
