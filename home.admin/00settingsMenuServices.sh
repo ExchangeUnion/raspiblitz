@@ -440,7 +440,7 @@ stable"
       mkdir /mnt/hdd/xud-mainnet
     fi
   
-    # TODO make sure lndtc is properly set up
+    # TODO make sure lndbtc is properly set up
     bash "$xudScript" -b pi
 --network=mainnet \
 --mainnet-dir=/mnt/hdd/xud-mainnet \
