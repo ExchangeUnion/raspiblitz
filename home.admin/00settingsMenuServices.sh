@@ -439,6 +439,14 @@ stable"
     if [ ! -e "/mnt/hdd/xud-mainnet" ]; then
       mkdir /mnt/hdd/xud-mainnet
     fi
+
+    if [ ! -e "/mnt/hdd/xud-mainnet/lndbtc" ]; then
+      mkdir /mnt/hdd/xud-mainnet/lndbtc
+    fi
+
+    # RaspiBlitz ~/.lnd is a link which will not be mapped in /mnt/hostfs
+    cp /mnt/hostfs/$HOME/.lnd/tls.cert /mnt/hdd/xud-mainnet/lndbtc/tls.cert
+    cp /mnt/hostfs/$HOME/.lnd/data/chain/bitcoin/mainnet/admin.macaroon /mnt/hdd/xud-mainnet/lndbtc/admin.macaroon
   
     # TODO make sure lndbtc is properly set up
     bash "$xudScript" -b pi
@@ -447,8 +455,8 @@ stable"
 --lndbtc.mode=external \
 --lndbtc.rpc-host= host.docker.internal \
 --lndbtc.rpc-port=10009 \
---lndbtc.certpath=/mnt/hostfs/$HOME/.lnd/tls.cert \
---lndbtc.macaroonpath=/mnt/hostfs/$HOME/.lnd/data/chain/bitcoin/mainnet/admin.macaroon \
+--lndbtc.certpath=/mnt/hostfs/mnt/hdd/xud-mainnet/lndbtc/tls.cert \
+--lndbtc.macaroonpath=/mnt/hostfs/mnt/hdd/xud-mainnet/lndbtc/admin.macaroon \
   fi
 else
   echo "XUD (OpenDEX) setting unchanged."
