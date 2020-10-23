@@ -445,7 +445,7 @@ stable"
 --network=mainnet \
 --mainnet-dir=/mnt/hdd/xud-mainnet \
 --lndbtc.mode=external \
---lndbtc.rpc-host=127.0.0.1 \
+--lndbtc.rpc-host= host.docker.internal \
 --lndbtc.rpc-port=10009 \
 --lndbtc.certpath=/mnt/hostfs/$HOME/.lnd/tls.cert \
 --lndbtc.macaroonpath=/mnt/hostfs/$HOME/.lnd/data/chain/bitcoin/mainnet/admin.macaroon \
