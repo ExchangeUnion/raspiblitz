@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set -euo pipefail
-set -x
 
 if ! command -v docker >/dev/null; then
     # Install Docker-CE
@@ -44,10 +43,10 @@ cp $HOME/.lnd/data/chain/bitcoin/mainnet/admin.macaroon /mnt/hdd/xud-mainnet/lnd
 
 # TODO make sure lndbtc is properly set up
 bash "$xudScript" -b pi \
---network=mainnet \
---mainnet-dir=/mnt/hdd/xud-mainnet \
---lndbtc.mode=external \
---lndbtc.rpc-host= host.docker.internal \
---lndbtc.rpc-port=10009 \
---lndbtc.certpath=/mnt/hostfs/mnt/hdd/xud-mainnet/lndbtc/tls.cert \
---lndbtc.macaroonpath=/mnt/hostfs/mnt/hdd/xud-mainnet/lndbtc/admin.macaroon \
+--network mainnet \
+--mainnet-dir /mnt/hdd/xud-mainnet \
+--lndbtc.mode external \
+--lndbtc.rpc-host 10.0.3.1 \
+--lndbtc.rpc-port 10009 \
+--lndbtc.certpath /mnt/hostfs/mnt/hdd/xud-mainnet/lndbtc/tls.cert \
+--lndbtc.macaroonpath /mnt/hostfs/mnt/hdd/xud-mainnet/lndbtc/admin.macaroon \
