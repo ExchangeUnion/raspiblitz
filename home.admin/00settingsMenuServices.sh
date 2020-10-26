@@ -388,6 +388,28 @@ else
   echo "Mempool Explorer Setting unchanged."
 fi
 
+# XUD (OpenDEX) process choice
+choice="off"; check=$(echo "${CHOICES}" | grep -c "x")
+if [ ${check} -eq 1 ]; then choice="on"; fi
+if [ "${xud}" != "${choice}" ]; then
+  echo "XUD (OpenDEX) Setting changed .."
+  anychange=1
+  /home/admin/config.scripts/bonus.xud.sh ${choice}
+  errorOnInstall=$?
+  if [ "${choice}" =  "on" ]; then
+    if [ ${errorOnInstall} -eq 0 ]; then
+      whiptail --title " Installed XUD (OpenDEX) " --msgbox "test!!!" 14 50
+    else
+      l1="!!! FAIL on XUD (OpenDEX) install !!!"
+      l2="Try manual install on terminal after reboot with:"
+      l3="/home/admin/config.scripts/bonus.xud.sh on"
+      dialog --title 'FAIL' --msgbox "${l1}\n${l2}\n${l3}" 7 65
+    fi
+  fi
+else
+  echo "XUD (OpenDEX) setting unchanged."
+fi
+
 if [ ${anychange} -eq 0 ]; then
      dialog --msgbox "NOTHING CHANGED!\nUse Spacebar to check/uncheck services." 8 58
      exit 0
@@ -402,62 +424,4 @@ if [ ${needsReboot} -eq 1 ]; then
    sudo -u bitcoin ${network}-cli stop
    sleep 4
    sudo /home/admin/XXshutdown.sh reboot
-fi
-
-# XUD (OpenDEX) process choice
-choice="off"; check=$(echo "${CHOICES}" | grep -c "i")
-if [ ${check} -eq 1 ]; then choice="on"; fi
-if [ "${xud}" != "${choice}" ]; then
-  echo "XUD (OpenDEX) Setting changed .."
-  anychange=1
-  if [ "${choice}" =  "on" ]; then
-    if ! command -v docker >/dev/null; then
-      # Install Docker-CE
-      curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
-      # Install add-apt-repository
-      sudo apt-get install -y software-properties-common
-      # arm64
-      # TODO support other platforms: amd64 & armhf (32bit)
-      sudo add-apt-repository \
-"deb [arch=arm64] https://download.docker.com/linux/debian \
-$(lsb_release -cs) \
-stable"
-      sudo apt-get update
-      sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-      sudo usermod -aG docker $USER
-      # https://stackoverflow.com/questions/49434650/how-to-add-a-user-to-a-group-without-logout-login-bash-script
-      # skip 00raspiblitz.sh
-      TMUX=1 newgrp docker
-      TMUX=1 newgrp $USER
-    fi
-    xudScript="/home/admin/xud.sh" # TODO change to a more proper location in Raspiblitz
-    if [ ! -e "$xudScript" ]; then
-      # Download xud.sh
-      curl -s https://raw.githubusercontent.com/ExchangeUnion/xud-docker/master/xud.sh "$xudScript"
-    fi
-
-    if [ ! -e "/mnt/hdd/xud-mainnet" ]; then
-      mkdir /mnt/hdd/xud-mainnet
-    fi
-
-    if [ ! -e "/mnt/hdd/xud-mainnet/lndbtc" ]; then
-      mkdir /mnt/hdd/xud-mainnet/lndbtc
-    fi
-
-    # RaspiBlitz ~/.lnd is a link which will not be mapped in /mnt/hostfs
-    cp /mnt/hostfs/$HOME/.lnd/tls.cert /mnt/hdd/xud-mainnet/lndbtc/tls.cert
-    cp /mnt/hostfs/$HOME/.lnd/data/chain/bitcoin/mainnet/admin.macaroon /mnt/hdd/xud-mainnet/lndbtc/admin.macaroon
-  
-    # TODO make sure lndbtc is properly set up
-    bash "$xudScript" -b pi
---network=mainnet \
---mainnet-dir=/mnt/hdd/xud-mainnet \
---lndbtc.mode=external \
---lndbtc.rpc-host= host.docker.internal \
---lndbtc.rpc-port=10009 \
---lndbtc.certpath=/mnt/hostfs/mnt/hdd/xud-mainnet/lndbtc/tls.cert \
---lndbtc.macaroonpath=/mnt/hostfs/mnt/hdd/xud-mainnet/lndbtc/admin.macaroon \
-  fi
-else
-  echo "XUD (OpenDEX) setting unchanged."
 fi
